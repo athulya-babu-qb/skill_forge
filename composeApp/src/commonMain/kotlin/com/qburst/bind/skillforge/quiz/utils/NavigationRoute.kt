@@ -18,7 +18,7 @@ sealed class NavigationRoute(val name: String) {
 @Composable
 fun Router() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = NavigationRoute.Splash.name) {
+    NavHost(navController = navController, startDestination = NavigationRoute.Landing.name) {
         composable(NavigationRoute.Splash.name) {
             SplashScreen(navController)
         }

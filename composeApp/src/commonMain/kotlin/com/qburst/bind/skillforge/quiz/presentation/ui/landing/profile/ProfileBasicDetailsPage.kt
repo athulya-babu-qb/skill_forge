@@ -23,13 +23,32 @@ import androidx.navigation.NavController
 import com.qburst.bind.skillforge.quiz.presentation.theme.PrimaryColor
 
 @Composable
-fun ProfileBasicDetailsScreen(navController: NavController, profileViewModel : ProfileViewModel = viewModel()) {
+fun ProfileBasicDetailsScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
     val userProfile by profileViewModel.userProfile.collectAsState()
 
     var firstName by remember { mutableStateOf(userProfile.firstName) }
     var lastName by remember { mutableStateOf(userProfile.lastName) }
     var userEmail by remember { mutableStateOf(userProfile.email) }
-    var userPhoneNo by remember { mutableStateOf(userProfile.phoneNo) }
+    var userPhoneNo by remember { mutableStateOf(if (userProfile.phoneNo == 0L) "" else userProfile.phoneNo.toString()) }
+
+    var firstNameError by remember { mutableStateOf(false) }
+    var lastNameError by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf(false) }
+    var phoneError by remember { mutableStateOf(false) }
+
+    fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        return email.matches(emailRegex.toRegex())
+    }
+
+    fun validateFields(): Boolean {
+        firstNameError = firstName.isBlank()
+        lastNameError = lastName.isBlank()
+        emailError = !isValidEmail(userEmail)
+        userPhoneNo = userPhoneNo.filter { it.isDigit() }
+
+        return !(firstNameError || lastNameError || emailError || phoneError)
+    }
 
     Scaffold(
         topBar = {
@@ -48,82 +67,61 @@ fun ProfileBasicDetailsScreen(navController: NavController, profileViewModel : P
                     .verticalScroll(rememberScrollState())
             ) {
                 ProfilePageHeading()
-
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = "Basic Details",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-
+                Text("Basic Details", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 Divider(
-                    modifier = Modifier
-                        .width(120.dp)
-                        .padding(top = 2.dp),
+                    modifier = Modifier.width(120.dp).padding(top = 2.dp),
                     color = Color(0xFF6A1B9A),
                     thickness = 2.dp
                 )
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 TextFieldWithAsterisk(
                     label = "First Name",
                     value = firstName,
-                    isNumberField = false,
-                    onValueChange = {
-                        firstName = it
-                    }
+                    onValueChange = { firstName = it }
                 )
+                if (firstNameError) Text("Please enter your First Name", color = Color.Red, fontSize = 12.sp)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextFieldWithAsterisk(
                     label = "Last Name",
                     value = lastName,
-                    isNumberField = false,
-                    onValueChange = {
-                        lastName = it
-                    }
+                    onValueChange = { lastName = it }
                 )
+                if (lastNameError) Text("Please enter your Last Name", color = Color.Red, fontSize = 12.sp)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextFieldWithAsterisk(
                     label = "Email",
                     value = userEmail,
-                    isNumberField = false,
-                    onValueChange = {
-                        userEmail = it
-                    }
+                    onValueChange = { userEmail = it }
                 )
+                if (emailError) Text("Please enter valid email address", color = Color.Red, fontSize = 12.sp)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextFieldWithAsterisk(
                     label = "Mobile",
-                    value = if (userPhoneNo == 0L) "" else userPhoneNo.toString(),
-                    isNumberField = true,
-                    onValueChange = {
-                        if (it.isEmpty()) {
-                            userPhoneNo = 0L
-                        } else if (it.length > 10 || !it.all { char -> char.isDigit() }) {
-//                            Toast.makeText(context, "Please enter a valid phone number", Toast.LENGTH_SHORT).show()
-                        } else {
-                            userPhoneNo = it.toLong()
-                        }
-                    }
+                    value = userPhoneNo,
+                    onValueChange = { userPhoneNo = it }
                 )
+                if (phoneError) Text("Phone number must be 10 digits", color = Color.Red, fontSize = 12.sp)
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = {
-                        profileViewModel.updateFirstName(firstName)
-                        profileViewModel.updateLastName(lastName)
-                        profileViewModel.updateEmail(userEmail)
-                        profileViewModel.updatePhoneNo(userPhoneNo)
-                        navController.navigate("ProfileEditProfessionalDetails")
+                        if (validateFields()) {
+                            profileViewModel.updateFirstName(firstName)
+                            profileViewModel.updateLastName(lastName)
+                            profileViewModel.updateEmail(userEmail)
+                            profileViewModel.updatePhoneNo(userPhoneNo.toLong())
+                            navController.navigate("profileEditProfessionalDetails")
+                        }
                     },
                     modifier = Modifier
                         .width(90.dp)
@@ -132,12 +130,7 @@ fun ProfileBasicDetailsScreen(navController: NavController, profileViewModel : P
                     colors = ButtonDefaults.buttonColors(PrimaryColor),
                     shape = RoundedCornerShape(20.dp),
                 ) {
-                    Text(
-                        text = "Next",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("Next", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

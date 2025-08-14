@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -91,7 +93,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                     Box( modifier = Modifier
                         .size(180.dp)
                         .clip(CircleShape)
-                        .background(color = Color.Gray)
+                        .background(color = Color.LightGray)
                         .border(5.dp, Color.Gray, shape = CircleShape),
                         contentAlignment = Alignment.Center,
 
@@ -113,10 +115,9 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                         IconButton(onClick = {
                             navController.navigate("ProfileEditBasicDetails")
                         }) {
-                            // Need to add edit icon for profile picture
-
+//                            // Need to add edit icon for profile picture
 //                            Icon(
-//                                painter = painterResource(Res.drawable.icon),
+//                                painter = painterResource(),
 //                                contentDescription = "Edit Icon",
 //
 //                                tint = Color.Black,

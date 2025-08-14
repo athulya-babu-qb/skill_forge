@@ -41,16 +41,32 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qburst.bind.skillforge.quiz.presentation.theme.PrimaryColor
 import com.qburst.bind.skillforge.quiz.presentation.ui.landing.util.BottomNavigationScreen
 
-
 @Composable
-fun ProfileProfessionalDetailsPage(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
-
+fun ProfileProfessionalDetailsPage(
+    navController: NavController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
     val userProfile by profileViewModel.userProfile.collectAsState()
+
     var designation by remember { mutableStateOf(userProfile.designation) }
     var domain by remember { mutableStateOf(userProfile.domain) }
     var years by remember { mutableStateOf(userProfile.years) }
     var months by remember { mutableStateOf(userProfile.months) }
     var skills by remember { mutableStateOf(userProfile.skills) }
+
+    // Error states
+    var experienceError by remember { mutableStateOf(false) }
+    var designationError by remember { mutableStateOf(false) }
+    var domainError by remember { mutableStateOf(false) }
+
+    fun validateFields(): Boolean {
+        // Experience must have at least one non-zero value
+        experienceError = (years == 0 && months == 0)
+        designationError = designation.isBlank()
+        domainError = domain.isBlank()
+
+        return !(experienceError || designationError || domainError)
+    }
 
     Scaffold(
         topBar = {
@@ -96,6 +112,9 @@ fun ProfileProfessionalDetailsPage(navController: NavController, profileViewMode
                     Spacer(modifier = Modifier.width(16.dp))
                     NumberInputField(value = months, onValueChange = { months = it }, label = "Months")
                 }
+                if (experienceError) {
+                    Text("Please enter experience in years or months", color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -105,6 +124,9 @@ fun ProfileProfessionalDetailsPage(navController: NavController, profileViewMode
                     isNumberField = false,
                     onValueChange = { designation = it }
                 )
+                if (designationError) {
+                    Text("Please enter your designation", color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -112,8 +134,11 @@ fun ProfileProfessionalDetailsPage(navController: NavController, profileViewMode
                     label = "Domain",
                     value = domain,
                     isNumberField = false,
-                    onValueChange = { domain = it },
+                    onValueChange = { domain = it }
                 )
+                if (domainError) {
+                    Text("Please enter your domain", color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -126,11 +151,13 @@ fun ProfileProfessionalDetailsPage(navController: NavController, profileViewMode
 
                 Button(
                     onClick = {
-                        profileViewModel.updateDesignation(designation)
-                        profileViewModel.updateDomain(domain)
-                        profileViewModel.updateExperience(years, months)
-                        profileViewModel.updateSkills(skills)
-                        navController.navigate(BottomNavigationScreen.Profile.route)
+                        if (validateFields()) {
+                            profileViewModel.updateDesignation(designation)
+                            profileViewModel.updateDomain(domain)
+                            profileViewModel.updateExperience(years, months)
+                            profileViewModel.updateSkills(skills)
+                            navController.navigate(BottomNavigationScreen.Profile.route)
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
                     modifier = Modifier
